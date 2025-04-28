@@ -146,7 +146,7 @@ app.post("/api/cards", (req: Request, res: Response) => {
     }
 
     // Create new flashcard
-    const newCard = new Flashcard(front, back, hint, tags || []);
+    const newCard = new Flashcard(front, back, hint || "", tags || []);
 
     // Get current buckets
     const currentBuckets = state.getBuckets();
