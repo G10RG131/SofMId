@@ -1,0 +1,16 @@
+{
+  "devDependencies": {
+    "@types/cookiejar": "^2.1.5",
+    "@types/istanbul-lib-coverage": "^2.0.6",
+    "@types/istanbul-lib-report": "^3.0.3",
+    "@types/istanbul-reports": "^3.0.4",
+    "@types/jest": "^29.5.14",
+    "@types/methods": "^1.1.4",
+    "@types/node": "^22.15.3",
+    "@types/stack-utils": "^2.0.3",
+    "@types/superagent": "^8.1.9",
+    "@types/supertest": "^6.0.3",
+    "@types/yargs": "^17.0.33",
+    "@types/yargs-parser": "^21.0.3"
+  }
+}

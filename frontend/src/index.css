@@ -4,8 +4,8 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: rgba(0, 0, 0, 0.87);
+  background-color: #ff0000;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -19,20 +19,24 @@ a {
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
+  color: #55ff00;
 }
 
 body {
   margin: 0;
   display: flex;
-  place-items: center;
+  justify-content: center; /* Center horizontally */
+  align-items: center;    /* Center vertically */
   min-width: 320px;
   min-height: 100vh;
+  background-color: #00b1a9; /* Retain the background color */
 }
 
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
+  text-align: center;
+  margin: 0 auto;
 }
 
 button {
@@ -42,13 +46,21 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #000000;
+  color: #ffffff;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
+
 button:hover {
-  border-color: #646cff;
+  background-color: #646cff; /* Change background color on hover */
+  transform: scale(1.05); /* Slightly enlarge the button */
 }
+
+button:active {
+  transform: scale(0.95); /* Slightly shrink the button when clicked */
+}
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
@@ -56,7 +68,7 @@ button:focus-visible {
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
+    color: #075ba4;
     background-color: #ffffff;
   }
   a:hover {
@@ -66,3 +78,14 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+.app-container {
+  display: flex; /* Enables flexbox for layout */
+  justify-content: center; /* Centers content horizontally */
+  align-items: center; /* Centers content vertically */
+  min-height: 80vh; /* Ensures the container takes up most of the viewport height */
+  padding: 20px; /* Adds some spacing inside the container */
+  background-color: #00f7ff; /* Sets a background color */
+  border-radius: 8px; /* Adds rounded corners */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
+}
+

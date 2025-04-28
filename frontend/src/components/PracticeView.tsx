@@ -156,6 +156,12 @@ const PracticeView = () => {
           <p className="difficulty-text">How difficult was this card?</p>
           <div>
             <button
+              className="btn btn-easy"
+              onClick={() => handleAnswer(AnswerDifficulty.Easy)}
+            >
+              Easy
+            </button>
+            <button
               className="btn btn-medium"
               onClick={() => handleAnswer(AnswerDifficulty.Medium)}
             >
@@ -166,12 +172,6 @@ const PracticeView = () => {
               onClick={() => handleAnswer(AnswerDifficulty.Hard)}
             >
               Hard
-            </button>
-            <button
-              className="btn btn-easy"
-              onClick={() => handleAnswer(AnswerDifficulty.Easy)}
-            >
-              Easy
             </button>
           </div>
         </div>

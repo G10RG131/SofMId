@@ -90,8 +90,8 @@ export function update(
 
   // Calculate new bucket
   let newBucket: number;
-  if (difficulty === AnswerDifficulty.Wrong) {
-    newBucket = 0; // Answered wrong, go back to bucket 0
+  if (difficulty === AnswerDifficulty.Medium) {
+    newBucket = 0; // medium, go back to bucket 0
   } else if (difficulty === AnswerDifficulty.Hard) {
     newBucket = currentBucket; // Hard, stay in the same bucket
   } else {

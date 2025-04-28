@@ -1,12 +1,16 @@
 import React from "react";
 import PracticeView from "./components/PracticeView";
-//import "./styles.css";
+import "./index.css";
 
 const App: React.FC = () => {
   return (
-    <div className="app-container">
-      <h1>Flashcard Learner</h1>
-      <PracticeView />
+    <div>
+      <div className="app-header">
+        <h1>Practice App</h1>
+      </div>
+      <div className="app-container">
+        <PracticeView />
+      </div>
     </div>
   );
 };
