@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@tensorflow-models/handpose": "^0.0.7",
-    "@tensorflow/tfjs": "^3.18.0",
+    "@tensorflow/tfjs": "^3.21.0",
     "axios": "^1.8.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

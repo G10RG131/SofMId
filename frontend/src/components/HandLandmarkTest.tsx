@@ -87,7 +87,6 @@ export default function HandLandmarkTest() {
 
   return (
     <div style={{ position: 'relative', width: '640px' }}>
-      <h2>Hand Landmark Test</h2>
       {loading && <div>Loading model...</div>}
       {error && <div style={{ color: 'red' }}>{error}</div>}
       
