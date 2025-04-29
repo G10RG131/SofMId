@@ -1,0 +1,6 @@
+body { font-family: sans-serif; margin: 10px; }
+#list { margin-top: 10px; max-height: 300px; overflow-y: auto; }
+.card { display: flex; justify-content: space-between; padding: 5px; border-bottom: 1px solid #ddd; }
+.card button { margin-left: 10px; }
+#clear { margin-top: 10px; }
+#webcam { width: 100%; max-width: 200px; margin-bottom: 10px; }

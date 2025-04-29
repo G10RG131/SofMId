@@ -1,18 +1,16 @@
-/**
- * @jest-environment jsdom
- */
-import { saveFlashcard, getFlashcards, clearFlashcards } from "../storage/storage";
+import { saveFlashcard, getFlashcards, clearFlashcards } from "../storage/storage.js";
 
-beforeEach(async () => await clearFlashcards());
+beforeEach(() => chrome.storage.local.clear());
 
 test("save and retrieve flashcard", async () => {
-  const card = { text: "Hello", timestamp: 1 };
-  await saveFlashcard(card);
-  expect(await getFlashcards()).toEqual([card]);
+  await saveFlashcard({ text: "A" });
+  const all = await getFlashcards();
+  expect(all.length).toBe(1);
+  expect(all[0].front).toBe("A");
 });
 
-test("clear flashcards", async () => {
-  await saveFlashcard({ text: "A", timestamp: 2 });
+test("clearFlashcards empties", async () => {
+  await saveFlashcard({ text: "X" });
   await clearFlashcards();
   expect(await getFlashcards()).toEqual([]);
 });
