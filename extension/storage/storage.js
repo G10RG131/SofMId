@@ -1,23 +1,29 @@
-import { makeFlashcard } from './flashcard.js';
+// extension/storage/storage.js
 
-export async function saveFlashcard(cardOrPayload) {
-  const { flashcards = [] } = await chrome.storage.local.get('flashcards');
-  let card;
-  if (cardOrPayload.id && cardOrPayload.front) {
-    card = cardOrPayload;
-  } else {
-    card = makeFlashcard(cardOrPayload.text);
-    card.timestamp = cardOrPayload.timestamp;
-  }
+export async function saveFlashcard(data) {
+  const { flashcards = [] } = await chrome.storage.local.get("flashcards");
+  const card = data.id && data.front
+    ? data
+    : {
+        id: crypto.randomUUID?.() ?? `${Date.now()}-${Math.random()}`,
+        front: data.front.trim(),
+        back:  data.back?.trim()  ?? "",
+        hint:  data.hint?.trim()  ?? "",
+        tags:  (data.tags || "")
+                  .split(",")
+                  .map(s => s.trim())
+                  .filter(Boolean),
+        timestamp: data.timestamp || Date.now(),
+      };
   flashcards.push(card);
   await chrome.storage.local.set({ flashcards });
 }
 
 export async function getFlashcards() {
-  const { flashcards = [] } = await chrome.storage.local.get('flashcards');
+  const { flashcards = [] } = await chrome.storage.local.get("flashcards");
   return flashcards;
 }
 
-export function clearFlashcards() {
-  return chrome.storage.local.remove('flashcards');
+export async function clearFlashcards() {
+  await chrome.storage.local.remove("flashcards");
 }

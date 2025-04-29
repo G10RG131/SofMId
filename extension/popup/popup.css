@@ -1,4 +1,41 @@
-body { font-family: sans-serif; margin: 10px; }
-#list { margin-top: 10px; }
-.card { padding: 5px; border-bottom: 1px solid #ddd; }
-video { width: 100%; max-width: 200px; margin-bottom: 10px; }
+/* extension/popup/popup.css */
+
+body {
+  font-family: sans-serif;
+  margin: 10px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+label {
+  font-weight: bold;
+}
+
+textarea, input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.buttons {
+  display: flex;
+  gap: 8px;
+}
+
+#list {
+  margin-top: 10px;
+}
+
+.card {
+  padding: 6px;
+  border-bottom: 1px solid #ddd;
+}
+
+.hint, .tags {
+  font-size: 0.9em;
+  color: #555;
+}
