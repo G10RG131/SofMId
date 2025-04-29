@@ -6,7 +6,7 @@ import {
   PracticeSession,
   UpdateRequest,
   ProgressStats,
-} from "../types";
+} from "../types/index";
 
 const API_BASE_URL = "http://localhost:3001/api";
 const apiClient = axios.create({
