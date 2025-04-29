@@ -17,8 +17,17 @@ import React from "react";
 import PracticeView from "./components/PracticeView";
 import GestureDisplay from './components/GestureDisplay';
 import CameraTest from './components/CameraTest'; // Add this import
+import HandLandmarkTest from './components/HandLandmarkTest';
+
+
+  
 
 const App: React.FC = () => {
+  return (
+    <div className="App">
+      <HandLandmarkTest />
+    </div>
+  );
   return (
     <div style={{ 
       maxWidth: '1200px', 
@@ -44,6 +53,8 @@ const App: React.FC = () => {
       <GestureDisplay />
     </div>
   );
+ 
+
 };
 
 export default App;

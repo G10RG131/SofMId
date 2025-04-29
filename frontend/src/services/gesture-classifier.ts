@@ -3,6 +3,7 @@ import { AnnotatedPrediction } from '@tensorflow-models/handpose';
 export type GestureType = 'easy' | 'medium' | 'hard' | 'none';
 
 export class GestureClassifier {
+    // ... [paste the entire classifier implementation here]
     classify(predictions: AnnotatedPrediction[]): GestureType {
         if (!predictions || predictions.length === 0) return 'none';
 
