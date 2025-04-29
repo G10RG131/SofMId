@@ -1,4 +1,5 @@
 import { GestureClassifier } from './gesture-classifier';
+
 import { AnnotatedPrediction } from '@tensorflow-models/handpose';
 
 // 1. Type-safe test data creator

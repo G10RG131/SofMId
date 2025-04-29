@@ -4,7 +4,7 @@ import type { Socket } from 'socket.io-client';
 import { GestureResult } from '../types/gesture-types';
 
 export class GestureService {
-    private socket: Socket;
+    public socket: Socket;
     
     constructor() {
         try {

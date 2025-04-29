@@ -1,48 +1,228 @@
+// // // import React from "react";
+// // // import { Flashcard } from "../types";
 
-import React, { useState } from "react";
-import { Flashcard } from "../types";
-import { fetchHint } from "../services/api";
+// // // interface FlashcardDisplayProps {
+// // //   card: Flashcard;
+// // //   showBack: boolean;
+// // // }
+
+// // // const FlashcardDisplay: React.FC<FlashcardDisplayProps> = ({ card, showBack }) => {
+// // //   return (
+// // //     <div style={{
+// // //       minHeight: '200px',
+// // //       display: 'flex',
+// // //       flexDirection: 'column',
+// // //       justifyContent: 'center',
+// // //       alignItems: 'center',
+// // //       margin: '20px 0',
+// // //       padding: '20px',
+// // //       border: '1px solid #ddd',
+// // //       borderRadius: '8px',
+// // //       backgroundColor: '#f9f9f9'
+// // //     }}>
+// // //       <p style={{ 
+// // //         fontSize: '24px', 
+// // //         fontWeight: 'bold',
+// // //         marginBottom: '20px'
+// // //       }}>
+// // //         {card.front}
+// // //       </p>
+// // //       <p style={{ 
+// // //         fontSize: '20px',
+// // //         color: showBack ? '#333' : '#ccc'
+// // //       }}>
+// // //         {showBack ? card.back : '???'}
+// // //       </p>
+// // //       {showBack && card.hint && (
+// // //         <p style={{ 
+// // //           marginTop: '15px',
+// // //           fontStyle: 'italic',
+// // //           color: '#666'
+// // //         }}>
+// // //           Hint: {card.hint}
+// // //         </p>
+// // //       )}
+// // //     </div>
+// // //   );
+// // // };
+
+// // // export default FlashcardDisplay;
+// // import React from "react";
+// // import { Flashcard } from "../types";
+
+// // interface FlashcardDisplayProps {
+// //   card: Flashcard;
+// //   showBack: boolean;
+// // }
+
+// // const FlashcardDisplay: React.FC<FlashcardDisplayProps> = ({ card, showBack }) => {
+// //   return (
+// //     <div style={{
+// //       minHeight: '200px',
+// //       display: 'flex',
+// //       flexDirection: 'column',
+// //       justifyContent: 'center',
+// //       alignItems: 'center',
+// //       margin: '20px 0',
+// //       padding: '20px',
+// //       border: '1px solid #ddd',
+// //       borderRadius: '8px',
+// //       backgroundColor: '#f9f9f9'
+// //     }}>
+// //       <p style={{ 
+// //         fontSize: '24px', 
+// //         fontWeight: 'bold',
+// //         marginBottom: '20px'
+// //       }}>
+// //         {card.front}
+// //       </p>
+// //       <p style={{ 
+// //         fontSize: '20px',
+// //         color: showBack ? '#333' : '#ccc'
+// //       }}>
+// //         {showBack ? card.back : '???'}
+// //       </p>
+// //       {showBack && card.hint && (
+// //         <p style={{ 
+// //           marginTop: '15px',
+// //           fontStyle: 'italic',
+// //           color: '#666'
+// //         }}>
+// //           Hint: {card.hint}
+// //         </p>
+// //       )}
+// //     </div>
+// //   );
+// // };
+
+// // export default FlashcardDisplay;
+// import React from "react";
+// import { Flashcard, GestureType } from "../types";
+
+// interface FlashcardDisplayProps {
+//   card: Flashcard;
+//   showBack: boolean;
+//   selectedGesture?: GestureType | null;
+// }
+
+// const FlashcardDisplay: React.FC<FlashcardDisplayProps> = ({ 
+//   card, 
+//   showBack,
+//   selectedGesture
+// }) => {
+//   return (
+//     <div style={{
+//       minHeight: '200px',
+//       display: 'flex',
+//       flexDirection: 'column',
+//       justifyContent: 'center',
+//       alignItems: 'center',
+//       margin: '20px 0',
+//       padding: '20px',
+//       border: '1px solid #ddd',
+//       borderRadius: '8px',
+//       backgroundColor: '#f9f9f9'
+//     }}>
+//       <p style={{ 
+//         fontSize: '24px', 
+//         fontWeight: 'bold',
+//         marginBottom: '20px'
+//       }}>
+//         {card.front}
+//       </p>
+//       <p style={{ 
+//         fontSize: '20px',
+//         color: showBack ? '#333' : '#ccc'
+//       }}>
+//         {showBack ? card.back : '???'}
+//       </p>
+//       {showBack && card.hint && (
+//         <p style={{ 
+//           marginTop: '15px',
+//           fontStyle: 'italic',
+//           color: '#666'
+//         }}>
+//           Hint: {card.hint}
+//         </p>
+//       )}
+//       {showBack && selectedGesture && (
+//         <div style={{
+//           marginTop: '15px',
+//           padding: '10px',
+//           backgroundColor: '#4CAF50',
+//           color: 'white',
+//           borderRadius: '4px',
+//           textAlign: 'center'
+//         }}>
+//           Selected: {selectedGesture}
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default FlashcardDisplay;
+import React from "react";
+import { Flashcard, GestureType } from "../types";
 
 interface FlashcardDisplayProps {
   card: Flashcard;
   showBack: boolean;
+  selectedGesture?: GestureType | null;
 }
 
-const FlashcardDisplay: React.FC<FlashcardDisplayProps> = ({ card, showBack }) => {
-  const [hint, setHint] = useState<string | null>(null);
-  const [loadingHint, setLoadingHint] = useState<boolean>(false);
-  const [hintError, setHintError] = useState<string | null>(null);
-
-  const handleGetHint = async () => {
-    setLoadingHint(true);
-    setHintError(null);
-    try {
-      const hintResponse = await fetchHint(card);
-      setHint(hintResponse);
-    } catch (error) {
-      setHintError("Failed to fetch hint");
-    } finally {
-      setLoadingHint(false);
-    }
-  };
-
+const FlashcardDisplay: React.FC<FlashcardDisplayProps> = ({ 
+  card, 
+  showBack,
+  selectedGesture
+}) => {
   return (
-    <div className="flashcard-container">
-      <div className="flashcard">
-        <p className="flashcard-front">{card.front}</p>
-        {showBack ? (
-          <p className="flashcard-back">{card.back}</p>
-        ) : (
-          <p className="flashcard-back">???</p>
-        )}
-      </div>
-      {!showBack && (
-        <button onClick={handleGetHint} disabled={loadingHint}>
-          {loadingHint ? "Loading..." : "Get Hint"}
-        </button>
+    <div style={{
+      minHeight: '200px',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      margin: '20px 0',
+      padding: '20px',
+      border: '1px solid #ddd',
+      borderRadius: '8px',
+      backgroundColor: '#f9f9f9'
+    }}>
+      <p style={{ 
+        fontSize: '24px', 
+        fontWeight: 'bold',
+        marginBottom: '20px'
+      }}>
+        {card.front}
+      </p>
+      <p style={{ 
+        fontSize: '20px',
+        color: showBack ? '#333' : '#ccc'
+      }}>
+        {showBack ? card.back : '???'}
+      </p>
+      {showBack && card.hint && (
+        <p style={{ 
+          marginTop: '15px',
+          fontStyle: 'italic',
+          color: '#666'
+        }}>
+          Hint: {card.hint}
+        </p>
       )}
-      {hint && <p className="flashcard-hint">Hint: {hint}</p>}
-      {hintError && <p className="flashcard-error">{hintError}</p>}
+      {showBack && selectedGesture && selectedGesture !== 'none' && (
+        <div style={{
+          marginTop: '15px',
+          padding: '10px',
+          backgroundColor: '#4CAF50',
+          color: 'white',
+          borderRadius: '4px',
+          textAlign: 'center'
+        }}>
+          Selected: {selectedGesture}
+        </div>
+      )}
     </div>
   );
 };
