@@ -1,11 +1,7 @@
-export function makeFlashcard(front, back = "") {
-    const card = { front, back, timestamp: Date.now() };
-    checkRep(card);
-    return card;
+export function makeFlashcard(text) {
+  if (typeof text !== 'string' || !text.trim()) {
+    throw new Error('Flashcard text must be a nonempty string');
   }
-  function checkRep(c) {
-    if (typeof c.front !== "string" || !c.front.trim()) {
-      throw new Error("Flashcard.front must be a nonempty string");
-    }
-  }
-  
+  const id = crypto.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+  return { id, front: text.trim() };
+}

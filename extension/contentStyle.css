@@ -1,12 +1,12 @@
-/* Floating “Add” button style */
-#fc-add-btn {
-    position: absolute;
-    background: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 4px 8px;
-    cursor: pointer;
-    z-index: 9999;
-  }
-  
+#flashcard-add-btn {
+  position: absolute;
+  z-index: 2147483647;
+  padding: 4px 8px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  display: none; /* start hidden */
+}
