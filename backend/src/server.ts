@@ -1,3 +1,8 @@
+import { createServer } from 'http';
+import { Server as SocketIOServer } from 'socket.io';
+import { CameraService } from './logic/camera-service';
+import { HandPoseService } from './logic/handpose-service';
+import { GestureClassifier } from './logic/gesture-classifier';
 import express, { Request, Response } from "express";
 import cors from "cors";
 import * as logic from "./logic/algorithm";
@@ -176,7 +181,15 @@ app.post("/api/cards", (req: Request, res: Response) => {
 });
 
 // --- Start Server ---
-app.listen(PORT, () => {
-  console.log(`Backend server running at http://localhost:${PORT}`);
-  console.log(`Current Day: ${state.getCurrentDay()}`);
-});
+const httpServer = createServer(app);
+const io = new SocketIOServer(httpServer, { /* ... */ });
+
+// Initialize services
+const camera = new CameraService();
+const handPose = new HandPoseService();
+const classifier = new GestureClassifier();
+
+// Add Socket.IO logic (from previous example)
+// ...
+
+httpServer.listen(PORT, () => { /* ... */ });
