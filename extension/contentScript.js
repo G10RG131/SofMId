@@ -1,22 +1,24 @@
 // extension/contentScript.js
 
-// 1) Inject our CSS for the Add button and overlay styling
-const link = document.createElement('link');
-link.rel = 'stylesheet';
-link.href =
-  (typeof chrome !== 'undefined' &&
-   chrome.runtime &&
-   typeof chrome.runtime.getURL === 'function')
-    ? chrome.runtime.getURL('contentStyle.css')
-    : 'contentStyle.css';
-document.head.appendChild(link);
+// 1) Inject both CSS files, with a safe Jest fallback
+['contentStyle.css','overlay.css'].forEach(file => {
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  const href = (typeof chrome !== 'undefined'
+             && chrome.runtime
+             && typeof chrome.runtime.getURL === 'function')
+    ? chrome.runtime.getURL(file)
+    : file;
+  link.href = href;
+  document.head.appendChild(link);
+});
 
 // 2) Create the “Add” button (hidden initially)
 const addBtn = document.createElement('button');
 addBtn.id = 'flashcard-add-btn';
 addBtn.textContent = 'Add';
 addBtn.style.position = 'absolute';
-addBtn.style.display = 'none';
+addBtn.style.display  = 'none';
 document.body.appendChild(addBtn);
 
 // 3) Create our floating overlay, hidden by default
@@ -78,30 +80,15 @@ overlay.innerHTML = `
 `;
 document.body.appendChild(overlay);
 
-// 4) Helper to hide both addBtn and overlay
-function hideAddBtn() {
-  addBtn.style.display = 'none';
-}
-function hideOverlay() {
-  overlay.style.display = 'none';
-}
+// 4) Helpers to hide the UI
+function hideAddBtn()   { addBtn.style.display = 'none'; }
+function hideOverlay() { overlay.style.display = 'none'; }
 
-// ——— NEW: helper to send the selected text up to background ———
-function sendFlashcardMessage() {
-  const text = window.getSelection().toString().trim();
-  if (!text) return;
-  chrome.runtime.sendMessage({
-    type: 'NEW_FLASHCARD',
-    payload: { text, timestamp: Date.now() }
-  });
-}
-
-// 5) Show/Position the Add button on text selection
+// 5) On mouseup, show & position the Add button (no messaging yet)
 document.addEventListener('mouseup', () => {
   const text = window.getSelection().toString().trim();
   if (!text) {
-    hideAddBtn();
-    return;
+    return hideAddBtn();
   }
   const sel = window.getSelection();
   if (sel.rangeCount > 0 && typeof sel.getRangeAt === 'function') {
@@ -114,18 +101,27 @@ document.addEventListener('mouseup', () => {
   }
 });
 
-// 6) Clicking “Add” now both sends the message **and** opens the overlay
+// 6) When “Add” is clicked, send a NEW_FLASHCARD message *then* open overlay
 addBtn.addEventListener('click', () => {
   hideAddBtn();
 
-  // ← send the NEW_FLASHCARD message for your contentScript tests
-  sendFlashcardMessage();
-
-  // show the overlay, pre-fill the “Back” with the selected text
   const selected = window.getSelection().toString().trim();
-  overlay.style.display = 'block';
 
-  // reset & pre-fill form fields
+  // ——— send the message ———
+  if (typeof chrome !== 'undefined'
+   && chrome.runtime
+   && typeof chrome.runtime.sendMessage === 'function') {
+    chrome.runtime.sendMessage({
+      type: 'NEW_FLASHCARD',
+      payload: {
+        text: selected,
+        timestamp: Date.now()
+      }
+    });
+  }
+
+  // ——— now show the overlay, prefill “Back” ———
+  overlay.style.display = 'block';
   overlay.querySelector('#flashcard-front').value = '';
   overlay.querySelector('#flashcard-back').value  = selected;
   overlay.querySelector('#flashcard-hint').value  = '';
@@ -133,12 +129,12 @@ addBtn.addEventListener('click', () => {
   overlay.querySelector('#flashcard-front').focus();
 });
 
-// 7) Close button
+// 7) Close button on header
 overlay.querySelector('#flashcard-close').addEventListener('click', () => {
   hideOverlay();
 });
 
-// 8) Clear button
+// 8) Clear fields button
 overlay.querySelector('#flashcard-clear').addEventListener('click', () => {
   overlay.querySelector('#flashcard-front').value = '';
   overlay.querySelector('#flashcard-back').value  = '';
@@ -146,10 +142,10 @@ overlay.querySelector('#flashcard-clear').addEventListener('click', () => {
   overlay.querySelector('#flashcard-tags').value  = '';
 });
 
-// 9) Make overlay draggable by its header
+// 9) Draggable overlay
 ;(function makeDraggable() {
   const header = overlay.querySelector('#flashcard-header');
-  let offsetX = 0, offsetY = 0, dragging = false;
+  let offsetX=0, offsetY=0, dragging=false;
   header.addEventListener('mousedown', e => {
     dragging = true;
     const rect = overlay.getBoundingClientRect();
@@ -167,29 +163,22 @@ overlay.querySelector('#flashcard-clear').addEventListener('click', () => {
   });
 })();
 
-// 10) Handle form submission: save to chrome.storage.local
+// 10) When the form is submitted, write to chrome.storage.local
 overlay.querySelector('#flashcard-form').addEventListener('submit', async e => {
   e.preventDefault();
   const front = overlay.querySelector('#flashcard-front').value.trim();
   const back  = overlay.querySelector('#flashcard-back').value.trim();
-  if (!front || !back) return;            // require both
-  const hint = overlay.querySelector('#flashcard-hint').value.trim();
-  const tags = overlay
-    .querySelector('#flashcard-tags')
-    .value.split(',')
-    .map(s => s.trim())
-    .filter(Boolean);
+  if (!front || !back) return;
 
-  // read existing
+  const hint = overlay.querySelector('#flashcard-hint').value.trim();
+  const tags = overlay.querySelector('#flashcard-tags')
+                      .value.split(',')
+                      .map(s=>s.trim())
+                      .filter(Boolean);
+
   const { flashcards = [] } = await chrome.storage.local.get('flashcards');
-  // push new
-  flashcards.push({
-    id:    `${Date.now()}-${Math.random()}`,
-    front, back, hint, tags
-  });
-  // write back
+  flashcards.push({ id:`${Date.now()}-${Math.random()}`, front, back, hint, tags });
   await chrome.storage.local.set({ flashcards });
 
-  // hide when done
   hideOverlay();
 });

@@ -1,0 +1,51 @@
+/* extension/overlay.css */
+#flashcard-overlay {
+    display: none;
+    position: fixed;
+    top: 100px;
+    left: 100px;
+    width: 320px;
+    z-index: 2147483647;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    font-family: sans-serif;
+  }
+  
+  #flashcard-header {
+    padding: 8px;
+    background: #f1f1f1;
+    cursor: move;
+    user-select: none;
+    border-bottom: 1px solid #ccc;
+    font-weight: bold;
+  }
+  
+  #flashcard-close {
+    float: right;
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  #flashcard-form {
+    padding: 8px;
+  }
+  
+  #flashcard-form label {
+    display: block;
+    margin-bottom: 8px;
+  }
+  
+  #flashcard-form textarea,
+  #flashcard-form input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  #flashcard-form button {
+    margin-left: 8px;
+  }
+  
