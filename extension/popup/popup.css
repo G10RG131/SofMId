@@ -1,0 +1,104 @@
+:root {
+  --primary: #0b8043;
+  --primary-dark: #096633;
+  --bg: #fff;
+  --fg: #333;
+  --input-bg: #fafafa;
+  --border: #ccc;
+  --radius: 4px;
+}
+
+body {
+  margin: 0;
+  font-family: sans-serif;
+  width: 320px;
+  background: var(--bg);
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Header bar */
+#root > h1 {
+  margin: 0;
+  padding: 10px;
+  background: var(--primary);
+  color: white;
+  font-size: 16px;
+  text-align: center;
+}
+
+/* Form */
+#card-form {
+  padding: 10px;
+  flex-shrink: 0;
+}
+#card-form label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--fg);
+  font-size: 13px;
+}
+#card-form input {
+  width: 100%;
+  padding: 6px;
+  margin-top: 4px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--input-bg);
+}
+#card-form .actions {
+  text-align: right;
+  margin-top: 10px;
+}
+#card-form button {
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+}
+#card-form button[type="submit"] {
+  background: var(--primary);
+  color: white;
+  margin-left: 6px;
+}
+#card-form button[type="submit"]:hover {
+  background: var(--primary-dark);
+}
+#card-form #clear-btn {
+  background: #f3f3f3;
+  color: var(--fg);
+}
+#card-form #clear-btn:hover {
+  background: #e2e2e2;
+}
+
+/* Saved cards list */
+#list {
+  list-style: none;
+  padding: 0 10px 10px;
+  margin: 0;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+#list li {
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--fg);
+}
+#list li strong {
+  color: var(--primary-dark);
+}
+#list li em {
+  font-style: italic;
+  color: #666;
+}

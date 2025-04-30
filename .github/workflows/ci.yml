@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - extension
+  pull_request:
+
+jobs:
+  test-extension:
+    runs-on: ubuntu-latest
+
+    # run all commands in the `extension/` folder
+    defaults:
+      run:
+        working-directory: extension
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Bundle the extension
+        run: npm run build
+
+      - name: Run extension tests
+        run: npm test

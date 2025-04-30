@@ -1,6 +1,21 @@
 import { Flashcard, BucketMap, AnswerDifficulty } from "./logic/flashcards";
 import { PracticeRecord } from "./types";
 
+const flashcards: Flashcard[] = [];
+
+/**
+ * Checks if a flashcard with the given back text already exists.
+ * @param backText - The back text to check.
+ * @returns True if a flashcard with the back text exists, false otherwise.
+ */
+export function doesCardBackExist(backText: string): boolean {
+  return flashcards.some((card) => card.back === backText);
+}
+
+// Export flashcards for testing or other modules
+export { flashcards };
+
+
 // Initial Flashcards data
 const initialCards: Flashcard[] = [
   new Flashcard("der Tisch", "the table", "Starts with T", ["noun", "german"]),

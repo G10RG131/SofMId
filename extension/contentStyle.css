@@ -1,0 +1,17 @@
+/* extension/contentStyle.css */
+
+#flashcard-add-btn {
+  box-sizing: border-box;
+  background: #0b8043;
+  color: #fff;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  transition: background 150ms;
+}
+#flashcard-add-btn:hover {
+  background: #096633;
+}
