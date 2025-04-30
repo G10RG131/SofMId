@@ -2,33 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <link rel="stylesheet" href="popup.css" />
   <title>Flashcards</title>
+  <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
-  <h2>Flashcards</h2>
-
-  <form id="card-form">
-    <label for="front">Front:</label>
-    <textarea id="front" rows="2"></textarea>
-
-    <label for="back">Back:</label>
-    <textarea id="back" rows="2"></textarea>
-
-    <label for="hint">Hint (optional):</label>
-    <input id="hint" />
-
-    <label for="tags">Tags (comma-separated):</label>
-    <input id="tags" placeholder="e.g., noun, german" />
-
-    <div class="buttons">
-      <button type="submit">Save Card</button>
-      <button type="button" id="clear">Clear All</button>
-    </div>
-  </form>
-
-  <div id="list">Loading…</div>
-
-  <script type="module" src="popup.js"></script>
+  <div id="root"></div>
+  <script src="popup.js"></script>
 </body>
 </html>

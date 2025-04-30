@@ -1,184 +1,175 @@
 // extension/contentScript.js
 
-// 1) Inject both CSS files, with a safe Jest fallback
+// helper for chrome.runtime.getURL in tests & real
+function getURL(path) {
+  return (window.chrome?.runtime?.getURL)
+    ? chrome.runtime.getURL(path)
+    : path;
+}
+
+// 1) Inject CSS
 ['contentStyle.css','overlay.css'].forEach(file => {
   const link = document.createElement('link');
   link.rel = 'stylesheet';
-  const href = (typeof chrome !== 'undefined'
-             && chrome.runtime
-             && typeof chrome.runtime.getURL === 'function')
-    ? chrome.runtime.getURL(file)
-    : file;
-  link.href = href;
+  link.href = getURL(file);
   document.head.appendChild(link);
 });
 
-// 2) Create the “Add” button (hidden initially)
+// 2) Create “Add” button
 const addBtn = document.createElement('button');
 addBtn.id = 'flashcard-add-btn';
 addBtn.textContent = 'Add';
-addBtn.style.position = 'absolute';
-addBtn.style.display  = 'none';
+Object.assign(addBtn.style, {
+  position: 'absolute',
+  display: 'none',
+  zIndex: 2147483647,
+});
 document.body.appendChild(addBtn);
 
-// 3) Create our floating overlay, hidden by default
+// 3) Build overlay
 const overlay = document.createElement('div');
 overlay.id = 'flashcard-overlay';
-Object.assign(overlay.style, {
-  display: 'none',
-  position: 'fixed',
-  top: '100px',
-  left: '100px',
-  width: '320px',
-  zIndex: '2147483647',
-  background: 'white',
-  border: '1px solid #ccc',
-  borderRadius: '8px',
-  boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
-  fontFamily: 'sans-serif',
-});
+overlay.style.width = '320px';
 overlay.innerHTML = `
-  <div id="flashcard-header" style="
-      padding:8px;
-      background:#f1f1f1;
-      cursor:move;
-      user-select:none;
-      border-bottom:1px solid #ccc;
-      font-weight:bold;
-    ">
-    Flashcards
-    <button id="flashcard-close" style="
-        float:right;
-        border:none;
-        background:transparent;
-        font-size:16px;
-        cursor:pointer;
-      ">×</button>
+  <div id="flashcard-header">
+    <span>Flashcards</span>
+    <button id="flashcard-close">×</button>
   </div>
-  <form id="flashcard-form" style="padding:8px;">
-    <label style="display:block;margin-bottom:4px;">
-      Front:<br>
-      <textarea id="flashcard-front" rows="3" style="width:100%;"></textarea>
-    </label>
-    <label style="display:block;margin-bottom:4px;">
-      Back:<br>
-      <textarea id="flashcard-back" rows="3" style="width:100%;"></textarea>
-    </label>
-    <label style="display:block;margin-bottom:4px;">
-      Hint (optional):<br>
-      <input id="flashcard-hint" type="text" style="width:100%;"/>
-    </label>
-    <label style="display:block;margin-bottom:8px;">
-      Tags (comma-separated):<br>
-      <input id="flashcard-tags" type="text" style="width:100%;"/>
-    </label>
-    <div style="text-align:right;">
+  <form id="flashcard-form">
+    <label>Front:<br><textarea id="flashcard-front" rows="3"></textarea></label>
+    <label>Back:<br><textarea id="flashcard-back" rows="3"></textarea></label>
+    <label>Hint (optional):<br><input id="flashcard-hint" type="text"></label>
+    <label>Tags (comma-separated):<br><input id="flashcard-tags" type="text"></label>
+    <div class="actions">
       <button type="submit">Save Card</button>
       <button type="button" id="flashcard-clear">Clear</button>
     </div>
+    <div id="flashcard-msg"></div>
   </form>
 `;
 document.body.appendChild(overlay);
 
-// 4) Helpers to hide the UI
-function hideAddBtn()   { addBtn.style.display = 'none'; }
-function hideOverlay() { overlay.style.display = 'none'; }
+// universal box-sizing
+const styleAll = document.createElement('style');
+styleAll.textContent = `
+  #flashcard-overlay, #flashcard-overlay * { box-sizing: border-box; }
+`;
+document.head.appendChild(styleAll);
 
-// 5) On mouseup, show & position the Add button (no messaging yet)
+// helpers
+const showOverlay = () => overlay.classList.add('show');
+const hideOverlay = () => overlay.classList.remove('show');
+const hideAddBtn = () => addBtn.style.display = 'none';
+
+// 5) track last selection rect
+let lastRect = null;
+
+// 6) On mouseup → show Add button
 document.addEventListener('mouseup', () => {
-  const text = window.getSelection().toString().trim();
-  if (!text) {
-    return hideAddBtn();
-  }
   const sel = window.getSelection();
-  if (sel.rangeCount > 0 && typeof sel.getRangeAt === 'function') {
-    const rect = sel.getRangeAt(0).getBoundingClientRect();
-    addBtn.style.top    = `${rect.bottom + window.scrollY}px`;
-    addBtn.style.left   = `${rect.right  + window.scrollX - addBtn.offsetWidth}px`;
-    addBtn.style.display = 'block';
-  } else {
+  const txt = sel.toString().trim();
+  if (!txt || sel.rangeCount === 0) {
     hideAddBtn();
+    lastRect = null;
+    return;
   }
+  lastRect = sel.getRangeAt(0).getBoundingClientRect();
+  const { right, bottom } = lastRect;
+  const { scrollX, scrollY } = window;
+  const bw = addBtn.offsetWidth, bh = addBtn.offsetHeight;
+  let x = right + scrollX - bw;
+  let y = bottom + scrollY + 4;
+  x = Math.min(Math.max(x, scrollX + 8), scrollX + innerWidth - bw - 8);
+  const maxY = scrollY + innerHeight - bh - 8;
+  if (y > maxY) y = lastRect.top + scrollY - bh - 4;
+  addBtn.style.setProperty('left', `${x}px`, 'important');
+  addBtn.style.setProperty('top', `${y}px`, 'important');
+  addBtn.style.display = 'block';
 });
 
-// 6) When “Add” is clicked, send a NEW_FLASHCARD message *then* open overlay
+// 7) On Add click → send & show overlay
 addBtn.addEventListener('click', () => {
   hideAddBtn();
+  const text = window.getSelection().toString().trim();
 
-  const selected = window.getSelection().toString().trim();
+  // remove optional chaining so Jest mock is called
+  chrome.runtime.sendMessage({
+    type: 'NEW_FLASHCARD',
+    payload: { text, timestamp: Date.now() }
+  });
 
-  // ——— send the message ———
-  if (typeof chrome !== 'undefined'
-   && chrome.runtime
-   && typeof chrome.runtime.sendMessage === 'function') {
-    chrome.runtime.sendMessage({
-      type: 'NEW_FLASHCARD',
-      payload: {
-        text: selected,
-        timestamp: Date.now()
-      }
-    });
-  }
+  const rect = lastRect || addBtn.getBoundingClientRect();
+  const { scrollX, scrollY } = window;
+  const oh = overlay.offsetHeight;
+  let x = rect.left + scrollX;
+  let y = rect.bottom + scrollY + 6;
+  x = Math.min(Math.max(x, scrollX + 8), scrollX + innerWidth - overlay.offsetWidth - 8);
+  const maxY = scrollY + innerHeight - oh - 8;
+  if (y > maxY) y = rect.top + scrollY - oh - 4;
+  overlay.style.setProperty('left', `${x}px`, 'important');
+  overlay.style.setProperty('top', `${y}px`, 'important');
 
-  // ——— now show the overlay, prefill “Back” ———
-  overlay.style.display = 'block';
+  // reset & prefill
   overlay.querySelector('#flashcard-front').value = '';
-  overlay.querySelector('#flashcard-back').value  = selected;
-  overlay.querySelector('#flashcard-hint').value  = '';
-  overlay.querySelector('#flashcard-tags').value  = '';
+  overlay.querySelector('#flashcard-back').value = text;
+  overlay.querySelector('#flashcard-hint').value = '';
+  overlay.querySelector('#flashcard-tags').value = '';
+  overlay.querySelector('#flashcard-msg').textContent = '';
+  showOverlay();
   overlay.querySelector('#flashcard-front').focus();
 });
 
-// 7) Close button on header
-overlay.querySelector('#flashcard-close').addEventListener('click', () => {
-  hideOverlay();
-});
-
-// 8) Clear fields button
+// 8) Close & Clear
+overlay.querySelector('#flashcard-close').addEventListener('click', hideOverlay);
 overlay.querySelector('#flashcard-clear').addEventListener('click', () => {
-  overlay.querySelector('#flashcard-front').value = '';
-  overlay.querySelector('#flashcard-back').value  = '';
-  overlay.querySelector('#flashcard-hint').value  = '';
-  overlay.querySelector('#flashcard-tags').value  = '';
+  ['front','back','hint','tags'].forEach(id => {
+    overlay.querySelector(`#flashcard-${id}`).value = '';
+  });
+  overlay.querySelector('#flashcard-msg').textContent = '';
 });
 
-// 9) Draggable overlay
-;(function makeDraggable() {
-  const header = overlay.querySelector('#flashcard-header');
-  let offsetX=0, offsetY=0, dragging=false;
-  header.addEventListener('mousedown', e => {
-    dragging = true;
-    const rect = overlay.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
+// 9) Draggable header
+(function(){
+  const hdr = overlay.querySelector('#flashcard-header');
+  let drag = false, ox = 0, oy = 0;
+  hdr.style.cursor = 'move';
+  hdr.addEventListener('mousedown', e => {
+    drag = true;
+    const r = overlay.getBoundingClientRect();
+    ox = e.clientX - r.left;
+    oy = e.clientY - r.top;
     e.preventDefault();
   });
   document.addEventListener('mousemove', e => {
-    if (!dragging) return;
-    overlay.style.left = `${e.clientX - offsetX}px`;
-    overlay.style.top  = `${e.clientY - offsetY}px`;
+    if (!drag) return;
+    overlay.style.left = `${e.clientX - ox}px`;
+    overlay.style.top  = `${e.clientY - oy}px`;
   });
-  document.addEventListener('mouseup', () => {
-    dragging = false;
-  });
+  document.addEventListener('mouseup', () => { drag = false; });
 })();
 
-// 10) When the form is submitted, write to chrome.storage.local
+// 10) Save & show success then auto-close
 overlay.querySelector('#flashcard-form').addEventListener('submit', async e => {
   e.preventDefault();
-  const front = overlay.querySelector('#flashcard-front').value.trim();
-  const back  = overlay.querySelector('#flashcard-back').value.trim();
-  if (!front || !back) return;
+  const f = overlay.querySelector('#flashcard-front').value.trim();
+  const b = overlay.querySelector('#flashcard-back').value.trim();
+  if (!f || !b) return;
+  const h = overlay.querySelector('#flashcard-hint').value.trim();
+  const t = overlay.querySelector('#flashcard-tags')
+    .value.split(',').map(s=>s.trim()).filter(Boolean);
 
-  const hint = overlay.querySelector('#flashcard-hint').value.trim();
-  const tags = overlay.querySelector('#flashcard-tags')
-                      .value.split(',')
-                      .map(s=>s.trim())
-                      .filter(Boolean);
-
-  const { flashcards = [] } = await chrome.storage.local.get('flashcards');
-  flashcards.push({ id:`${Date.now()}-${Math.random()}`, front, back, hint, tags });
+  const data = await chrome.storage.local.get('flashcards');
+  const flashcards = data.flashcards || [];
+  flashcards.push({
+    id: `${Date.now()}-${Math.random()}`,
+    front: f, back: b, hint: h, tags: t
+  });
   await chrome.storage.local.set({ flashcards });
 
-  hideOverlay();
+  // show success
+  const msg = overlay.querySelector('#flashcard-msg');
+  msg.textContent = 'Card saved successfully!';
+  msg.style.color = '#0b8043';
+  // auto-close after 1s
+  setTimeout(hideOverlay, 1000);
 });

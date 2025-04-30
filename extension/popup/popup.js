@@ -1,53 +1,80 @@
 // extension/popup/popup.js
-import { saveFlashcard, getFlashcards, clearFlashcards } from "../storage/storage.js";
-
-const form      = document.getElementById("card-form");
-const frontEl   = document.getElementById("front");
-const backEl    = document.getElementById("back");
-const hintEl    = document.getElementById("hint");
-const tagsEl    = document.getElementById("tags");
-const clearBtn  = document.getElementById("clear");
-const listEl    = document.getElementById("list");
-
-async function renderList() {
-  const cards = await getFlashcards();
-  if (!cards.length) {
-    listEl.textContent = "No flashcards saved.";
-    return;
+;(async function() {
+  // 1) Mount root
+  let root = document.getElementById('root');
+  if (!root) {
+    root = document.createElement('div');
+    root.id = 'root';
+    document.body.appendChild(root);
   }
-  listEl.innerHTML = cards.map(c => `
-    <div class="card">
-      <div><strong>Front:</strong> ${c.front}</div>
-      <div><strong>Back:</strong> ${c.back}</div>
-      ${c.hint ? `<div class="hint">Hint: ${c.hint}</div>` : ""}
-      ${c.tags?.length ? `<div class="tags">Tags: ${c.tags.join(", ")}</div>` : ""}
+
+  // 2) Header
+  const h1 = document.createElement('h1');
+  h1.textContent = 'Flashcards';
+  root.appendChild(h1);
+
+  // 3) Form
+  const form = document.createElement('form');
+  form.id = 'card-form';
+  form.innerHTML = `
+    <label>Front:<br><input id="front" type="text"></label>
+    <label>Back:<br><input id="back" type="text"></label>
+    <label>Hint:<br><input id="hint" type="text"></label>
+    <label>Tags:<br><input id="tags" type="text"></label>
+    <div class="actions">
+      <button type="button" id="clear-btn">Clear All</button>
+      <button type="submit">Save Card</button>
     </div>
-  `).join("");
-}
+  `;
+  root.appendChild(form);
 
-form.addEventListener("submit", async e => {
-  e.preventDefault();
-  await saveFlashcard({
-    front: frontEl.value,
-    back:  backEl.value,
-    hint:  hintEl.value,
-    tags:  tagsEl.value
+  // 4) List container
+  const list = document.createElement('ul');
+  list.id = 'list';
+  root.appendChild(list);
+
+  // 5) Load existing flashcards on open
+  const { flashcards = [] } = await chrome.storage.local.get('flashcards');
+  flashcards.forEach(card => {
+    const li = document.createElement('li');
+    let html = `<strong>Front:</strong> ${card.front}<br><strong>Back:</strong> ${card.back}`;
+    if (card.hint) html += `<br><em>Hint: ${card.hint}</em>`;
+    if (card.tags.length) html += `<br>Tags: ${card.tags.join(', ')}`;
+    li.innerHTML = html;
+    list.appendChild(li);
   });
-  form.reset();
-  renderList();
-});
 
-clearBtn.addEventListener("click", async () => {
-  await clearFlashcards();
-  renderList();
-});
+  // 6) Clear All handler
+  document.getElementById('clear-btn').addEventListener('click', async () => {
+    await chrome.storage.local.set({ flashcards: [] });
+    list.innerHTML = '';
+  });
 
-(async function init() {
-  // If background set a pendingBack, load it
-  const { pendingBack = "" } = await chrome.storage.local.get("pendingBack");
-  if (pendingBack) {
-    backEl.value = pendingBack;
-    await chrome.storage.local.remove("pendingBack");
-  }
-  renderList();
+  // 7) Submit handler
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const front = document.getElementById('front').value.trim();
+    const back  = document.getElementById('back').value.trim();
+    const hint  = document.getElementById('hint').value.trim();
+    const tags  = document.getElementById('tags').value
+                    .split(',').map(s=>s.trim()).filter(Boolean);
+    if (!front || !back) return;
+
+    // save to storage
+    const { flashcards = [] } = await chrome.storage.local.get('flashcards');
+    const card = { id:`${Date.now()}-${Math.random()}`, front, back, hint, tags };
+    flashcards.push(card);
+    await chrome.storage.local.set({ flashcards });
+
+    // append to list
+    const li = document.createElement('li');
+    let html = `<strong>Front:</strong> ${front}<br><strong>Back:</strong> ${back}`;
+    if (hint) html += `<br><em>Hint: ${hint}</em>`;
+    if (tags.length) html += `<br>Tags: ${tags.join(', ')}`;
+    li.innerHTML = html;
+    list.appendChild(li);
+
+    // reset form
+    form.reset();
+  });
 })();
