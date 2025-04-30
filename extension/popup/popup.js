@@ -1,4 +1,6 @@
 // extension/popup/popup.js
+console.log("📥 popup.js loaded");
+
 ;(async function() {
   // 1) Mount root
   let root = document.getElementById('root');
@@ -35,14 +37,7 @@
 
   // 5) Load existing flashcards on open
   const { flashcards = [] } = await chrome.storage.local.get('flashcards');
-  flashcards.forEach(card => {
-    const li = document.createElement('li');
-    let html = `<strong>Front:</strong> ${card.front}<br><strong>Back:</strong> ${card.back}`;
-    if (card.hint) html += `<br><em>Hint: ${card.hint}</em>`;
-    if (card.tags.length) html += `<br>Tags: ${card.tags.join(', ')}`;
-    li.innerHTML = html;
-    list.appendChild(li);
-  });
+  flashcards.forEach(card => renderCard(card));
 
   // 6) Clear All handler
   document.getElementById('clear-btn').addEventListener('click', async () => {
@@ -66,15 +61,27 @@
     flashcards.push(card);
     await chrome.storage.local.set({ flashcards });
 
-    // append to list
-    const li = document.createElement('li');
-    let html = `<strong>Front:</strong> ${front}<br><strong>Back:</strong> ${back}`;
-    if (hint) html += `<br><em>Hint: ${hint}</em>`;
-    if (tags.length) html += `<br>Tags: ${tags.join(', ')}`;
-    li.innerHTML = html;
-    list.appendChild(li);
+    renderCard(card);
 
     // reset form
     form.reset();
+
+    // sync with background (only if available)
+    console.log("📤 popup sending SYNC_FLASHCARD", card);
+    if (chrome.runtime?.sendMessage) {
+      chrome.runtime.sendMessage(
+        { type: "SYNC_FLASHCARD", payload: card },
+        resp => console.log("📣 popup got sync response", resp)
+      );
+    }
   });
+
+  function renderCard(card) {
+    const li = document.createElement('li');
+    let html = `<strong>Front:</strong> ${card.front}<br><strong>Back:</strong> ${card.back}`;
+    if (card.hint) html += `<br><em>Hint: ${card.hint}</em>`;
+    if (card.tags.length) html += `<br>Tags: ${card.tags.join(', ')}`;
+    li.innerHTML = html;
+    list.appendChild(li);
+  }
 })();

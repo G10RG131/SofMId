@@ -92,7 +92,7 @@ addBtn.addEventListener('click', () => {
   hideAddBtn();
   const text = window.getSelection().toString().trim();
 
-  // remove optional chaining so Jest mock is called
+  // notify background to create a NEW_FLASHCARD (back empty)
   chrome.runtime.sendMessage({
     type: 'NEW_FLASHCARD',
     payload: { text, timestamp: Date.now() }
@@ -109,7 +109,7 @@ addBtn.addEventListener('click', () => {
   overlay.style.setProperty('left', `${x}px`, 'important');
   overlay.style.setProperty('top', `${y}px`, 'important');
 
-  // reset & prefill
+  // reset & prefill form
   overlay.querySelector('#flashcard-front').value = '';
   overlay.querySelector('#flashcard-back').value = text;
   overlay.querySelector('#flashcard-hint').value = '';
@@ -158,18 +158,26 @@ overlay.querySelector('#flashcard-form').addEventListener('submit', async e => {
   const t = overlay.querySelector('#flashcard-tags')
     .value.split(',').map(s=>s.trim()).filter(Boolean);
 
+  // save locally
   const data = await chrome.storage.local.get('flashcards');
   const flashcards = data.flashcards || [];
-  flashcards.push({
+  const card = {
     id: `${Date.now()}-${Math.random()}`,
     front: f, back: b, hint: h, tags: t
-  });
+  };
+  flashcards.push(card);
   await chrome.storage.local.set({ flashcards });
 
-  // show success
+  // ─── NEW: also sync this card with backend ────────────────────────────────
+  chrome.runtime.sendMessage(
+    { type: "SYNC_FLASHCARD", payload: card },
+    resp => console.log("✨ overlay sync response:", resp)
+  );
+  // ───────────────────────────────────────────────────────────────────────────
+
+  // show success & auto-close
   const msg = overlay.querySelector('#flashcard-msg');
   msg.textContent = 'Card saved successfully!';
   msg.style.color = '#0b8043';
-  // auto-close after 1s
   setTimeout(hideOverlay, 1000);
 });
