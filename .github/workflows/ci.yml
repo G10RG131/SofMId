@@ -8,7 +8,7 @@ on:
   pull_request:
 
 jobs:
-  test:
+  test-extension:
     runs-on: ubuntu-latest
 
     # run all commands in the `extension/` folder
@@ -28,8 +28,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Bundle the popup
+      - name: Bundle the extension
         run: npm run build
 
-      - name: Run tests
+      - name: Run extension tests
         run: npm test

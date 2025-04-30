@@ -1,86 +1,115 @@
-# Extension Code Overview
+Flashcards Extension (MV3)
 
-This README provides an overview of all source files in the `extension/` folder, explaining their purpose and interactions.
+Highlight text on any webpage → save as flashcards → review via popup or hand-pose gestures.
 
-## File Structure
+---
+Extension Folder Structure
 
-```
 extension/
 ├── manifest.json
 ├── background.js
 ├── contentScript.js
+├── contentStyle.css
+├── overlay.css
 ├── storage/
 │   └── storage.js
 ├── popup/
 │   ├── popup.html
-│   └── popup.js
-└── tests/
-    ├── storage.test.js
-    └── contentScript.test.js
-```
+│   ├── popup.js  
+│   └── popup.css
+├── icons/
+│   ├── icon16.png
+│   ├── icon48.png
+│   └── icon128.png
+├── styleMock.js
+├── package.json
+├── rollup.config.js
+└── test/
+    ├── contentScript.test.js
+    ├── flashcard.test.js
+    ├── popup.test.js
+    └── storage.test.js
 
-## Description of Files
+---
+File Descriptions
 
-### `manifest.json`
-Defines Chrome MV3 configuration:
-- **permissions**: `storage`, `activeTab`, `scripting`
-- **host_permissions**: matches all URLs
-- **background.service_worker**: `background.js`
-- **content_scripts**: inject `contentScript.js` on all pages
-- **action**: sets `popup/popup.html` as the UI
+manifest.json
+- manifest_version: 3
+- permissions: storage, activeTab, scripting
+- host_permissions: <all_urls>, http://localhost:3001/*
+- background: service_worker → background.js
+- content_scripts: inject contentScript.js, contentStyle.css, overlay.css on all pages
+- action: popup UI at popup/popup.html, default icons
 
-### `contentScript.js`
-- Listens for `mouseup` events.
-- Extracts selected text.
-- Sends a message `NEW_FLASHCARD` with the text and timestamp to the background script.
+contentScript.js
+- Injects CSS & overlay HTML
+- Shows floating “Add” button on text selection
+- On click, sends NEW_FLASHCARD to background, pre-fills overlay form
+- Saves new card to chrome.storage.local and sends SYNC_FLASHCARD
 
-### `background.js`
-- Registers a listener for Chrome runtime messages.
-- On `NEW_FLASHCARD`, calls `saveFlashcard` from `storage/storage.js`.
-- Responds asynchronously to confirm saving.
+background.js
+- Listens for NEW_FLASHCARD & SYNC_FLASHCARD messages
+- POSTs card data to backend at /api/cards
+- Logs status & relays response back to sender
 
-### `storage/storage.js`
-Provides an API for persistent storage via `chrome.storage.local`:
-- `saveFlashcard(flashcard)`: appends a flashcard object.
-- `getFlashcards()`: retrieves the array of saved cards.
-- `clearFlashcards()`: removes all saved cards.
+storage/storage.js
+- Wraps chrome.storage.local calls
+- getFlashcards(), setFlashcards([...]), clearFlashcards()
+- Ensures flashcards array invariant
 
-### `popup/popup.html`
-Defines the popup UI:
-- Displays a heading and a container for the flashcards list.
-- Includes a "Clear All" button.
-- Loads `popup.js` for interaction.
+popup/
+- popup.html: form + list container
+- popup.js:
+  - Loads stored flashcards on open
+  - Handles “Save Card” (local + sync) and “Clear All”
+  - Renders list of cards
 
-### `popup/popup.js`
-Controls popup behavior:
-- Calls `getFlashcards()` on open to render saved cards.
-- Maps each card to a list item showing index and text.
-- Adds click handler on "Clear All" to remove all cards and re-render.
+CSS (contentStyle.css, overlay.css, popup.css)
+- Styles for overlay form and popup UI
 
-### Tests (`tests/`)
-- `storage.test.js`: verifies `saveFlashcard`, `getFlashcards`, and `clearFlashcards`.
-- `contentScript.test.js`: ensures no message is sent when no selection exists.
+Tests (test/*.test.js)
+- Unit tests for contentScript, storage ADT, flashcard model, popup logic
 
-## How It Works Together
+---
+Usage
 
-1. **User selects text** → `contentScript.js` detects selection and messages background.
-2. **Background script** receives the message → calls storage util to save it.
-3. **Popup UI** fetches stored cards and displays them.
-4. **Tests** validate storage logic and content script behavior in isolation.
+1. Start backend (if using sync API):
+   cd backend
+   npm install
+   npm run dev
 
-## Development & Testing
+2. Load extension in Chrome:
+   - Go to chrome://extensions/
+   - Enable Developer mode
+   - Click “Load unpacked” → select extension/ folder
 
-1. **Load extension** in Chrome:
-   - `chrome://extensions/` → Developer mode → Load unpacked → `extension/`
-2. **Run tests**:
-   ```bash
-   npm install --save-dev jest
-   npm test
-   ```
-3. **Git workflow**: use feature branches for each file/module, small commits, and PR reviews.
+3. Use:
+   - Select text → click “Add” → edit front/back/hint/tags → Save
+   - Open extension icon to review saved cards
 
-## Next Steps
+---
+Testing
 
-- Integrate hand-pose gesture library in `popup.js` or `contentScript.js`.
-- Add end-to-end tests (e.g., Puppeteer) for UI interactions.
-- Polish UI/UX and error handling.
+cd extension
+npm install
+npm test
+
+All four test suites must pass.
+
+---
+CI (GitHub Actions)
+
+Add this badge to your README after you merge CI:
+
+![CI](https://github.com/<YOUR-ORG>/<YOUR-REPO>/actions/workflows/ci.yml/badge.svg)
+
+Ensure .github/workflows/ci.yml runs:
+- npm test in extension/
+- (optional) npm test in backend/
+
+---
+Next Steps
+
+- Integrate TF.js hand-pose gestures for “review” controls
+- Add practice UI calling /api/practice, /api/update, /api/progress
+- E2E tests (Puppeteer or Playwright)
