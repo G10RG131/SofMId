@@ -99,17 +99,5 @@ All four test suites must pass.
 ---
 CI (GitHub Actions)
 
-Add this badge to your README after you merge CI:
 
 ![CI](https://github.com/<YOUR-ORG>/<YOUR-REPO>/actions/workflows/ci.yml/badge.svg)
-
-Ensure .github/workflows/ci.yml runs:
-- npm test in extension/
-- (optional) npm test in backend/
-
----
-Next Steps
-
-- Integrate TF.js hand-pose gestures for “review” controls
-- Add practice UI calling /api/practice, /api/update, /api/progress
-- E2E tests (Puppeteer or Playwright)
