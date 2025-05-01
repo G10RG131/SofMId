@@ -19,7 +19,7 @@ export { flashcards };
 // Initial Flashcards data
 const initialCards: Flashcard[] = [
   new Flashcard("der Tisch", "the table", "Starts with T", ["noun", "german"]),
-  new Flashcard("la silla", "the chair", "Starts with S", ["noun", "spanish"]),
+  new Flashcard("la silla", "the chair", "Starts with C", ["noun", "spanish"]),
   new Flashcard("bonjour", "hello", "Greeting", ["phrase", "french"]),
   new Flashcard("arigato", "thank you", "Expression of gratitude", [
     "phrase",

@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useEffect } from "react";
 import PracticeView from "./components/PracticeView";
 import GestureDisplay from './components/GestureDisplay';
-import { GestureType } from "./types";
+import { GestureType } from "./types/gesture-types";
+
 
 const App: React.FC = () => {
   const [selectedGesture, setSelectedGesture] = useState<GestureType | null>(null);
@@ -29,25 +30,6 @@ const App: React.FC = () => {
     startDetectionPhase();
   }, [showAnswer, startDetectionPhase]);
 
-  useEffect(() => {
-    if (phase === 'waiting') return;
-
-    const timer = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          if (phase === 'detecting') {
-            setSelectedGesture('none');
-          }
-          setPhase('waiting');
-          return 5;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [phase]);
 
   return (
     <div style={{ 
@@ -61,7 +43,7 @@ const App: React.FC = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '20px' }}>
         <div style={{ flex: 1 }}>
           <PracticeView 
-            selectedGesture={selectedGesture}
+            selectedGesture={selectedGesture} 
             showAnswer={showAnswer}
             setShowAnswer={setShowAnswer}
             countdown={countdown}
@@ -70,13 +52,12 @@ const App: React.FC = () => {
         </div>
 
         <div style={{ flex: 1 }}>
-          <GestureDisplay 
+          <GestureDisplay
             onGestureDetected={handleGestureDetected} 
             active={phase === 'detecting'}
           />
         </div>
       </div>
-
       <div style={{
         marginTop: '30px',
         padding: '15px',
@@ -84,31 +65,12 @@ const App: React.FC = () => {
         borderRadius: '8px'
       }}>
         <h3>Gesture Controls</h3>
-        
-        {phase === 'detecting' ? (
-          <p>Show your gesture in: {countdown}s</p>
-        ) : (
-          <p>Next question in: {countdown}s</p>
-        )}
-        
+                
         <ul style={{ listStyle: 'none', paddingLeft: '0' }}>
           <li>👍 Thumbs Up = Easy</li>
           <li>✋ Open Hand = Medium</li>
           <li>👎 Thumbs Down = Hard</li>
         </ul>
-        
-        {selectedGesture && selectedGesture !== 'none' && (
-          <div style={{
-            margin: '10px 0',
-            padding: '10px',
-            backgroundColor: '#4CAF50',
-            color: 'white',
-            borderRadius: '4px',
-            textAlign: 'center'
-          }}>
-            Selected: {selectedGesture}
-          </div>
-        )}
       </div>
     </div>
   );

@@ -15,9 +15,7 @@ interface PracticeViewProps {
 const PracticeView: React.FC<PracticeViewProps> = ({ 
   selectedGesture, 
   showAnswer,
-  setShowAnswer,
-  countdown,
-  phase
+  setShowAnswer
 }) => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
@@ -44,13 +42,15 @@ const PracticeView: React.FC<PracticeViewProps> = ({
 
     loadFlashcards();
   }, []);
-
+  
+  // Detect gesture and move to the next card
   useEffect(() => {
-    if (phase === 'waiting' && countdown === 5 && selectedGesture !== null) {
-      setCurrentCardIndex(prev => (prev + 1) % flashcards.length);
-      setShowAnswer(false);
+    if (selectedGesture !== null && selectedGesture !== 'none') {
+      console.log(`Gesture detected: ${selectedGesture}`);
+      selectedGesture = 'none'; // Reset the gesture to null after processing
+      handleNextCard(); // Move to the next card
     }
-  }, [phase, countdown, selectedGesture, flashcards.length, setShowAnswer]);
+  }, [selectedGesture]);
 
   const handleShowAnswer = () => {
     setShowAnswer(true);
@@ -74,9 +74,13 @@ const PracticeView: React.FC<PracticeViewProps> = ({
   const handleGetHint = async () => {
     if (currentCardIndex >= flashcards.length) return;
 
+    if (hint) {
+      setHint(null);
+      return;
+    }
+
     const currentCard = flashcards[currentCardIndex];
     setLoadingHint(true);
-    setHint(null);
     try {
       const fetchedHint = await fetchHint(currentCard); // Fetch hint for the current card
       setHint(fetchedHint);
@@ -86,6 +90,12 @@ const PracticeView: React.FC<PracticeViewProps> = ({
     } finally {
       setLoadingHint(false);
     }
+  };
+
+  const handleNextCard = () => {
+    setCurrentCardIndex((prev) => (prev + 1) % flashcards.length);
+    setShowAnswer(false); // Reset the answer view
+    setHint(null); // Clear the hint for the next card
   };
 
   if (isLoading) {
@@ -107,11 +117,12 @@ const PracticeView: React.FC<PracticeViewProps> = ({
       {flashcards.length > 0 ? (
         <>
           <FlashcardDisplay 
-            card={flashcards[currentCardIndex]} 
-            showBack={showAnswer}
-            selectedGesture={selectedGesture}
-          />
-          
+          card={flashcards[currentCardIndex]} 
+          showBack={showAnswer} // Pass showAnswer to control answer visibility
+          hint={hint} // Pass hint to control hint visibility
+          selectedGesture={selectedGesture} 
+          onNextCard={handleNextCard} 
+        />
           {!showAnswer ? (
             <div>
               <button 

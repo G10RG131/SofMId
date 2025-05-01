@@ -1,17 +1,21 @@
-import React from "react";
 import { Flashcard, GestureType } from "../types";
 
 interface FlashcardDisplayProps {
   card: Flashcard;
   showBack: boolean;
+  hint?: string | null;
   selectedGesture?: GestureType | null;
+  onNextCard?: () => void;
 }
 
 const FlashcardDisplay: React.FC<FlashcardDisplayProps> = ({ 
   card, 
   showBack,
   selectedGesture
-}) => {
+  }) => {
+  if (!card || !card.front || !card.back) {
+    return <div>Error: Invalid card data.</div>;
+  }
   return (
     <div style={{
       minHeight: '200px',
