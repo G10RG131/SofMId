@@ -2,32 +2,26 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-      - extension
+    branches: [ main, extension ]
   pull_request:
 
 jobs:
   test-extension:
     runs-on: ubuntu-latest
 
-    # run all commands in the `extension/` folder
     defaults:
       run:
         working-directory: extension
 
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Use Node.js 18
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 18
-          # cache your ~/.npm between runs
-          cache: 'npm'
+          cache: npm
 
-      - name: Install dependencies (ignore peer-dep conflicts)
+      - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
       - name: Bundle the extension
